@@ -1,2 +1,3 @@
 [tool.pylint.MASTER]
 disable = "missing-docstring"
+load-plugins = pylint_django
