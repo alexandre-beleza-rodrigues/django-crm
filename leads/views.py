@@ -1,22 +1,45 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Lead
-from .forms import LeadForm
+from .forms import LeadModelForm
 
 
 def lead_list(request):
-    _leads = Lead.objects.all()
-    context = {"leads": _leads}
+    leads = Lead.objects.all()
+    context = {"leads": leads}
     return render(request, "lead_list.html", context)
 
 
 def lead_detail(request, pk):
-    _lead = Lead.objects.get(id=pk)
-    context = {"lead": _lead}
+    lead = Lead.objects.get(id=pk)
+    context = {"lead": lead}
     return render(request, "lead_detail.html", context)
 
 
 def lead_create(request):
-    context = {
-        "form": LeadForm()
-    }
+    if request.method == "POST":
+        form = LeadModelForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("/leads")
+
+    form = LeadModelForm()
+    context = {"form": form}
     return render(request, "lead_create.html", context)
+
+
+def lead_update(request, pk):
+    lead = Lead.objects.get(id=pk)
+    if request.method == "POST":
+        form = LeadModelForm(request.POST, instance=lead)
+        if form.is_valid():
+            form.save()
+            return redirect(f"/leads/{pk}")
+
+    form = LeadModelForm(instance=lead) 
+    context = {"lead": lead, "form": form}
+    return render(request, "lead_update.html", context)
+
+def lead_delete(_, pk):
+    lead = Lead.objects.get(id=pk)
+    lead.delete()
+    return redirect("/leads")

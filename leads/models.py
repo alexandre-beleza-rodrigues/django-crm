@@ -9,7 +9,7 @@ class User(AbstractUser):
 class Lead(models.Model):
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
-    age = models.IntegerField(null=True)
+    age = models.PositiveIntegerField(null=True)
     agent = models.ForeignKey("Agent", on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
@@ -20,4 +20,4 @@ class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.user.username
+        return str(self.user.username)
