@@ -1,12 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block content %}
     <a href="/leads/">Go back to leads</a>
     <hr />
     <a href="{% url 'leads:lead-update' lead.pk  %}">Update</a>
@@ -15,5 +8,4 @@
     <p>Name: {{lead.first_name}} {{lead.last_name}}</p>
     <p>Age: {{lead.age}}</p>
     <p>Agent: {{lead.agent}}</p>
-</body>
-</html>
+{% endblock content %}
