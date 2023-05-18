@@ -9,8 +9,16 @@ from django.views.generic import (
     UpdateView,
 )
 
-from .forms import LeadModelForm
+from .forms import LeadModelForm, UserCreationForm
 from .models import Lead
+
+
+class SinupView(CreateView):
+    template_name = "registration/signup.html"
+    form_class = UserCreationForm
+
+    def get_success_url(self):
+        return reverse("login")
 
 
 class LandingPageView(TemplateView):
