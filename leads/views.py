@@ -1,14 +1,15 @@
 from django.urls import reverse
 from django.views.generic import (
-    TemplateView,
-    ListView,
-    DetailView,
     CreateView,
-    UpdateView,
     DeleteView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
 )
-from .models import Lead
+
 from .forms import LeadModelForm
+from .models import Lead
 
 
 class LandingPageView(TemplateView):
