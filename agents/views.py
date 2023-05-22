@@ -52,5 +52,5 @@ class AgentDeleteView(LoginRequiredMixin, DeleteView):
     context_object_name = "agent"
 
     def get_success_url(self):
-        organisation = self.request.user.userprofile
-        return Agent.objects.filter(organisation=organisation)
+        return reverse("agents:agent-list")
+
