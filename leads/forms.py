@@ -18,7 +18,16 @@ class UserCreationForm(DjangoUserCreationForm):
 class LeadModelForm(forms.ModelForm):
     class Meta:
         model = Lead
-        fields = ("first_name", "last_name", "age", "agent", "category")
+        fields = (
+            "first_name",
+            "last_name",
+            "age",
+            "agent",
+            "category",
+            "description",
+            "phone_number",
+            "email",
+        )
 
 
 class CustomUserCreationForm(UserCreationForm):
