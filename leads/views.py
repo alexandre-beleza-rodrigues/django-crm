@@ -13,7 +13,7 @@ from django.views.generic import (
 
 from agents.mixins import OrganisorAndLoginRequiredMixin
 
-from .forms import AssignAgentForm, LeadModelForm, UserCreationForm
+from .forms import AssignAgentForm, LeadModelForm, UserCreationForm, LeadCategoryUpdateForm
 from .models import Lead, Category
 
 
@@ -162,7 +162,8 @@ class CategoryListView(LoginRequiredMixin, ListView):
         else:
             queryset = Category.objects.filter(organisation=user.agent.organisation)
         return queryset
-    
+
+
 class CategoryDetailView(LoginRequiredMixin, DetailView):
     template_name = "leads/category_detail.html"
     context_object_name = "category"
@@ -171,11 +172,26 @@ class CategoryDetailView(LoginRequiredMixin, DetailView):
         user = self.request.user
         # initial queryset of leads for the entire organisation
         if user.is_organiser:
-            queryset = Category.objects.filter(
-                organisation=user.userprofile
-            )
+            queryset = Category.objects.filter(organisation=user.userprofile)
         else:
-            queryset = Category.objects.filter(
-                organisation=user.agent.organisation
-            )
+            queryset = Category.objects.filter(organisation=user.agent.organisation)
         return queryset
+
+
+class LeadCategoryUpdateView(LoginRequiredMixin, UpdateView):
+    template_name = "leads/lead_category_update.html"
+    form_class = LeadCategoryUpdateForm
+
+    def get_queryset(self):
+        user = self.request.user
+        # initial queryset of leads for the entire organisation
+        if user.is_organiser:
+            queryset = Lead.objects.filter(organisation=user.userprofile)
+        else:
+            queryset = Lead.objects.filter(organisation=user.agent.organisation)
+            # filter for the agent that is logged in
+            queryset = queryset.filter(agent__user=user)
+        return queryset
+
+    def get_success_url(self):
+        return reverse("leads:lead-detail", kwargs={"pk": self.get_object().id})
