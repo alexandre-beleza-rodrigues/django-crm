@@ -53,7 +53,7 @@ class LeadListView(LoginRequiredMixin, ListView):
         return queryset
 
     def get_context_data(self, **kwargs):
-        context = super(LeadListView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         user = self.request.user
         if user.is_organiser:
             queryset = Lead.objects.filter(
@@ -94,7 +94,7 @@ class LeadCreateView(OrganisorAndLoginRequiredMixin, CreateView):
             from_email="djcrm@djcrm.com",
             recipient_list=["general@djcrm.com"],
         )
-        return super(LeadCreateView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class LeadUpdateView(OrganisorAndLoginRequiredMixin, UpdateView):
@@ -127,7 +127,7 @@ class AssignAgentView(OrganisorAndLoginRequiredMixin, FormView):
     form_class = AssignAgentForm
 
     def get_form_kwargs(self, **kwargs):
-        kwargs = super(AssignAgentView, self).get_form_kwargs(**kwargs)
+        kwargs = super().get_form_kwargs(**kwargs)
         kwargs.update({"request": self.request})
         return kwargs
 
@@ -139,7 +139,7 @@ class AssignAgentView(OrganisorAndLoginRequiredMixin, FormView):
         lead = Lead.objects.get(id=self.kwargs["pk"])
         lead.agent = agent
         lead.save()
-        return super(AssignAgentView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class CategoryListView(LoginRequiredMixin, ListView):
@@ -147,7 +147,7 @@ class CategoryListView(LoginRequiredMixin, ListView):
     context_object_name = "categories"
 
     def get_context_data(self, **kwargs):
-        context = super(CategoryListView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         user = self.request.user
 
         if user.is_organiser:
@@ -202,6 +202,7 @@ class LeadCategoryUpdateView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse("leads:lead-detail", kwargs={"pk": self.get_object().id})
 
+
 class CategoryCreateView(OrganisorAndLoginRequiredMixin, CreateView):
     template_name = "leads/category_create.html"
     form_class = CategoryModelForm
@@ -213,7 +214,7 @@ class CategoryCreateView(OrganisorAndLoginRequiredMixin, CreateView):
         category = form.save(commit=False)
         category.organisation = self.request.user.userprofile
         category.save()
-        return super(CategoryCreateView, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class CategoryUpdateView(OrganisorAndLoginRequiredMixin, UpdateView):
@@ -227,13 +228,9 @@ class CategoryUpdateView(OrganisorAndLoginRequiredMixin, UpdateView):
         user = self.request.user
         # initial queryset of leads for the entire organisation
         if user.is_organiser:
-            queryset = Category.objects.filter(
-                organisation=user.userprofile
-            )
+            queryset = Category.objects.filter(organisation=user.userprofile)
         else:
-            queryset = Category.objects.filter(
-                organisation=user.agent.organisation
-            )
+            queryset = Category.objects.filter(organisation=user.agent.organisation)
         return queryset
 
 
@@ -247,12 +244,7 @@ class CategoryDeleteView(OrganisorAndLoginRequiredMixin, DeleteView):
         user = self.request.user
         # initial queryset of leads for the entire organisation
         if user.is_organiser:
-            queryset = Category.objects.filter(
-                organisation=user.userprofile
-            )
+            queryset = Category.objects.filter(organisation=user.userprofile)
         else:
-            queryset = Category.objects.filter(
-                organisation=user.agent.organisation
-            )
+            queryset = Category.objects.filter(organisation=user.agent.organisation)
         return queryset
-
