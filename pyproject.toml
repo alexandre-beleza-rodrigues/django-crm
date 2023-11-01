@@ -1,4 +1,6 @@
 [tool.pylint.MASTER]
-disable = "missing-docstring"
 load-plugins = "pylint_django"
 django-settings-module = "djcrm.settings"
+disable = ["missing-docstring", "too-many-ancestors"]
+ignore = "manage.py"
+ignore-paths = ".*/migrations/.*"
