@@ -50,10 +50,10 @@ class Category(models.Model):
     organisation = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
-def post_user_created_signal(_, instance, created, **kwargs):
+def post_user_created_signal(instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
 
