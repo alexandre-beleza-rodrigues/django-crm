@@ -1,3 +1,7 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "djcrm.settings"
+python_files = ["test_*.py", "*_test.py"]
+
 [tool.pylint.MASTER]
 load-plugins = "pylint_django"
 django-settings-module = "djcrm.settings"

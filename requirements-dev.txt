@@ -1,3 +1,4 @@
+pytest-django
 pylint
 pylint-django
 black
