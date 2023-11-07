@@ -6,7 +6,7 @@ from leads.models import User, Lead
 class TestLeadModel(TestCase):
     def setUp(self) -> None:
         self.default_user = User.objects.create_user(
-            username="test_user", password="test_password"
+            username="testuser", password="testpass"
         )
         self.default_lead = Lead.objects.create(
             first_name="Jane",

@@ -5,10 +5,8 @@ from leads.models import Agent, User, Category
 
 class TestLeadModelForm(TestCase):
     def setUp(self):
-        self.default_username = "testuser"
-        self.default_password = "testpass"
         self.default_user = User.objects.create_user(
-            username=self.default_username, password=self.default_password
+            username="testuser", password="testpass"
         )
         self.default_agent = Agent.objects.create(
             user=User.objects.create_user(username="testagen", password="testpass"),
