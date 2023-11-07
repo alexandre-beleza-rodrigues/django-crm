@@ -3,7 +3,7 @@ from django.urls import reverse
 from leads.models import User, Lead, Agent
 
 
-class TestLeadListView(TestCase):
+class LeadVIewTestCase(TestCase):
     def setUp(self):
         self.default_username = "testuser"
         self.default_password = "testpass"
@@ -19,6 +19,8 @@ class TestLeadListView(TestCase):
             username=self.default_username, password=self.default_password
         )
 
+
+class TestLeadListView(LeadVIewTestCase):
     def test_correct_template_is_used(self):
         response = self.client.get(reverse("leads:lead-list"))
         self.assertEqual(response.status_code, 200)
@@ -78,3 +80,71 @@ class TestLeadListView(TestCase):
         self.client.logout()
         response = self.client.get(reverse("leads:lead-list"), follow=True)
         self.assertRedirects(response, "/login/?next=/leads/")
+
+
+class TestLeadDetailView(LeadVIewTestCase):
+    def test_correct_template_is_used(self):
+        lead = Lead.objects.create(
+            first_name="John",
+            last_name="Doe",
+            organisation=self.default_user.userprofile,
+        )
+
+        response = self.client.get(reverse("leads:lead-detail", kwargs={"pk": lead.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "leads/lead_detail.html")
+
+    def test_correct_lead_is_returned(self):
+        lead = Lead.objects.create(
+            first_name="John",
+            last_name="Doe",
+            organisation=self.default_user.userprofile,
+        )
+
+        response = self.client.get(reverse("leads:lead-detail", kwargs={"pk": lead.pk}))
+        self.assertEqual(response.context["lead"], lead)
+
+    def test_only_leads_in_same_organisation_can_be_accessed(self):
+        other_user = User.objects.create_user(username="otheruser", password="testpass")
+
+        Lead.objects.create(
+            first_name="John",
+            last_name="Doe",
+            organisation=self.default_user.userprofile,
+        )
+        other_lead = Lead.objects.create(
+            first_name="Jane",
+            last_name="Doe",
+            organisation=other_user.userprofile,
+        )
+
+        response = self.client.get(
+            reverse("leads:lead-detail", kwargs={"pk": other_lead.pk})
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        self.client.logout()
+
+        lead = Lead.objects.create(
+            first_name="John",
+            last_name="Doe",
+            organisation=self.default_user.userprofile,
+        )
+
+        response = self.client.get(reverse("leads:lead-detail", kwargs={"pk": lead.pk}))
+        self.assertEqual(response.status_code, 302)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        self.client.logout()
+
+        lead = Lead.objects.create(
+            first_name="John",
+            last_name="Doe",
+            organisation=self.default_user.userprofile,
+        )
+
+        response = self.client.get(
+            reverse("leads:lead-detail", kwargs={"pk": lead.pk}), follow=True
+        )
+        self.assertRedirects(response, "/login/?next=/leads/1/")
