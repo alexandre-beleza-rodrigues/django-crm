@@ -1,4 +1,5 @@
 pytest-django
+selenium
 pylint
 pylint-django
 black
