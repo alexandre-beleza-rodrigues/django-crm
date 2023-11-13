@@ -1,10 +1,37 @@
 from django.test import TestCase
 from django.urls import reverse
 from leads.models import User, Lead, Agent
-from leads.forms import LeadModelForm
+from leads.forms import LeadModelForm, UserCreationForm
 
 
-class LeadVIewTestCase(TestCase):
+class SignupViewTestCase(TestCase):
+    def test_correct_template_is_used(self):
+        response = self.client.get(reverse("signup"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "registration/signup.html")
+
+    def test_correct_form_is_used(self):
+        response = self.client.get(reverse("signup"))
+        self.assertIsInstance(response.context["form"], UserCreationForm)
+
+    def test_redirects_to_login_on_success(self):
+        data = {
+            "username": "testuser",
+            "password1": "verysecurepassword",
+            "password2": "verysecurepassword",
+        }
+        response = self.client.post(reverse("signup"), data=data, follow=True)
+        self.assertRedirects(response, reverse("login"))
+
+
+class LandingPageViewTestCase(TestCase):
+    def test_correct_template_is_used(self):
+        response = self.client.get(reverse("landing-page"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "landing.html")
+
+
+class LeadViewTestCase(TestCase):
     def setUp(self):
         self.default_username = "testuser"
         self.default_password = "testpass"
@@ -21,7 +48,7 @@ class LeadVIewTestCase(TestCase):
         )
 
 
-class TestLeadListView(LeadVIewTestCase):
+class TestLeadListView(LeadViewTestCase):
     def test_correct_template_is_used(self):
         response = self.client.get(reverse("leads:lead-list"))
         self.assertEqual(response.status_code, 200)
@@ -83,7 +110,7 @@ class TestLeadListView(LeadVIewTestCase):
         self.assertRedirects(response, "/login/?next=/leads/")
 
 
-class TestLeadDetailView(LeadVIewTestCase):
+class TestLeadDetailView(LeadViewTestCase):
     def test_correct_template_is_used(self):
         lead = Lead.objects.create(
             first_name="John",
@@ -151,7 +178,7 @@ class TestLeadDetailView(LeadVIewTestCase):
         self.assertRedirects(response, "/login/?next=/leads/1/")
 
 
-class TestLeadCreateView(LeadVIewTestCase):
+class TestLeadCreateView(LeadViewTestCase):
     def test_correct_template_is_used(self):
         response = self.client.get(reverse("leads:lead-create"))
         self.assertEqual(response.status_code, 200)
@@ -217,7 +244,7 @@ class TestLeadCreateView(LeadVIewTestCase):
         self.assertRedirects(response, "/login/?next=/leads/")
 
 
-class TestLeadUpdateView(LeadVIewTestCase):
+class TestLeadUpdateView(LeadViewTestCase):
     def setUp(self):
         super().setUp()
         self.default_lead = Lead.objects.create(
@@ -323,7 +350,7 @@ class TestLeadUpdateView(LeadVIewTestCase):
         self.assertRedirects(response, "/login/?next=/leads/")
 
 
-class TestLeadDeleteView(LeadVIewTestCase):
+class TestLeadDeleteView(LeadViewTestCase):
     def setUp(self):
         super().setUp()
         self.default_lead = Lead.objects.create(
