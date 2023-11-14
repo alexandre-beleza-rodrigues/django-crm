@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from leads.models import User, Lead, Agent
 from leads.forms import LeadModelForm, UserCreationForm
+from leads.tests import CRMTestCase
 
 
 class SignupViewTestCase(TestCase):
@@ -31,18 +32,9 @@ class LandingPageViewTestCase(TestCase):
         self.assertTemplateUsed(response, "landing.html")
 
 
-class LeadViewTestCase(TestCase):
+class LeadViewTestCase(CRMTestCase):
     def setUp(self):
-        self.default_username = "testuser"
-        self.default_password = "testpass"
-        self.default_user = User.objects.create_user(
-            username=self.default_username, password=self.default_password
-        )
-        self.default_agent = Agent.objects.create(
-            user=User.objects.create_user(username="agentuser", password="testpass"),
-            organisation=self.default_user.userprofile,
-        )
-
+        super().setUp()
         self.client.login(
             username=self.default_username, password=self.default_password
         )

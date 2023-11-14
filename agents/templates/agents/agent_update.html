@@ -11,7 +11,8 @@
                 <h1 class="text-gray-900 text-3xl title-font font-medium mb-4">{{ agent.user.username }}</h1>
                 <div class="flex mb-4">
                     <a href="{% url 'agents:agent-detail' agent.pk %}"
-                        class="flex-grow border-b-2 border-gray-300 py-2 text-lg px-1">
+                        class="flex-grow border-b-2 border-gray-300 py-2 text-lg px-1"
+                        id="overview">
                         Overview
                     </a>
                     <a href="{% url 'agents:agent-update' agent.pk %}"
@@ -22,8 +23,8 @@
                 <form form method="post">
                     {% csrf_token %}
                     {{ form|crispy }}
-                    <button type="submit"
-                        class="w-full text-white bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-md">Submit</button>
+                    <button type="submit" class="w-full text-white bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-md"
+                        id="update_agent">Submit</button>
                 </form>
                 <div class="mt-5 py-5 border-t border-gray-200">
                     <a href="{% url 'agents:agent-delete' agent.pk %}"

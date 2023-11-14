@@ -1,5 +1,5 @@
 import random
-from typing import Any
+from typing import Any, Dict
 
 from django.core.mail import send_mail
 from django.urls import reverse
@@ -67,8 +67,8 @@ class AgentUpdateView(OrganisorAndLoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None) -> Any:
         agent = super().get_object(queryset=queryset)
         return agent.user
-    
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["agent"] = Agent.objects.get(user=self.object)
         return context
