@@ -1,4 +1,5 @@
 import random
+from typing import Any
 
 from django.core.mail import send_mail
 from django.urls import reverse
@@ -61,10 +62,20 @@ class AgentUpdateView(OrganisorAndLoginRequiredMixin, UpdateView):
     template_name = "agents/agent_update.html"
     form_class = AgentModelForm
     queryset = Agent.objects.all()
-    context_object_name = "agent"
+    context_object_name = "user"
+
+    def get_object(self, queryset=None) -> Any:
+        agent = super().get_object(queryset=queryset)
+        return agent.user
+    
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["agent"] = Agent.objects.get(user=self.object)
+        return context
 
     def get_success_url(self):
-        return reverse("agents:agent-detail", kwargs={"pk": self.object.pk})
+        agent = Agent.objects.get(user=self.object)
+        return reverse("agents:agent-detail", kwargs={"pk": agent.pk})
 
 
 class AgentDeleteView(OrganisorAndLoginRequiredMixin, DeleteView):
