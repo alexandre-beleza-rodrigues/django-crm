@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from leads.models import User, Lead, Agent
-from leads.forms import LeadModelForm, UserCreationForm
+from leads.forms import LeadModelForm, UserCreationForm, AssignAgentForm
 from leads.tests import CRMTestCase
 
 
@@ -47,6 +47,8 @@ class TestLeadListView(LeadViewTestCase):
         self.assertTemplateUsed(response, "leads/lead_list.html")
 
     def test_correct_leads_are_returned(self):
+        initial_leads = list(Lead.objects.all())
+
         lead_john = Lead.objects.create(
             first_name="John",
             last_name="Doe",
@@ -63,7 +65,9 @@ class TestLeadListView(LeadViewTestCase):
         )
 
         response = self.client.get(reverse("leads:lead-list"))
-        self.assertListEqual(list(response.context["leads"]), [lead_john, lead_jane])
+        self.assertListEqual(
+            list(response.context["leads"]), initial_leads + [lead_john, lead_jane]
+        )
 
     def test_only_leads_in_same_organisation_can_be_accessed(self):
         other_user = User.objects.create_user(username="otheruser", password="testpass")
@@ -167,7 +171,7 @@ class TestLeadDetailView(LeadViewTestCase):
         response = self.client.get(
             reverse("leads:lead-detail", kwargs={"pk": lead.pk}), follow=True
         )
-        self.assertRedirects(response, "/login/?next=/leads/1/")
+        self.assertRedirects(response, f"/login/?next=/leads/{lead.pk}/")
 
 
 class TestLeadCreateView(LeadViewTestCase):
@@ -385,3 +389,53 @@ class TestLeadDeleteView(LeadViewTestCase):
             follow=True,
         )
         self.assertRedirects(response, "/login/?next=/leads/")
+
+
+class TestAssignAgentView(CRMTestCase):
+    def setUp(self):
+        super().setUp()
+        self.client.login(
+            username=self.default_username, password=self.default_password
+        )
+
+    def test_correct_template_is_used(self):
+        response = self.client.get(
+            reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "leads/assign_agent.html")
+
+    def test_correct_form_is_used(self):
+        response = self.client.get(
+            reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk})
+        )
+        self.assertIsInstance(response.context["form"], AssignAgentForm)
+
+    def test_assigns_agent_to_lead(self):
+        agent = Agent.objects.create(
+            user=User.objects.create_user(username="newuser", password="testpass"),
+            organisation=self.default_user.userprofile,
+        )
+        self.client.post(
+            reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk}),
+            data={
+                "agent": agent.pk,
+            },
+            follow=True,
+        )
+        self.default_lead.refresh_from_db()
+        self.assertEqual(self.default_lead.agent, agent)
+
+    def test_redirects_to_lead_list_on_success(self):
+        agent = Agent.objects.create(
+            user=User.objects.create_user(username="newuser", password="testpass"),
+            organisation=self.default_user.userprofile,
+        )
+        response = self.client.post(
+            reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk}),
+            data={
+                "agent": agent.pk,
+            },
+            follow=True,
+        )
+        self.assertRedirects(response, reverse("leads:lead-list"))
