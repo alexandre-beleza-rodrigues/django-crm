@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from leads.models import User, Lead, Agent
+from leads.models import User, Lead, Agent, Category
 from leads.forms import LeadModelForm, UserCreationForm, AssignAgentForm
 from leads.tests import CRMTestCase
 
@@ -32,15 +32,25 @@ class LandingPageViewTestCase(TestCase):
         self.assertTemplateUsed(response, "landing.html")
 
 
-class LeadViewTestCase(CRMTestCase):
+class ViewTestCase(CRMTestCase):
     def setUp(self):
         super().setUp()
         self.client.login(
             username=self.default_username, password=self.default_password
         )
 
+    def assert_only_authenticated_users_can_access_this_view(self, url):
+        self.client.logout()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
 
-class TestLeadListView(LeadViewTestCase):
+    def assert_unauthenticated_users_get_redirected_to_login(self, url, redirect_url):
+        self.client.logout()
+        response = self.client.get(url, follow=True)
+        self.assertRedirects(response, redirect_url)
+
+
+class TestLeadListView(ViewTestCase):
     def test_correct_template_is_used(self):
         response = self.client.get(reverse("leads:lead-list"))
         self.assertEqual(response.status_code, 200)
@@ -96,17 +106,16 @@ class TestLeadListView(LeadViewTestCase):
         self.assertListEqual(list(response.context["leads"]), [lead_jane])
 
     def test_only_authenticated_users_can_access_this_view(self):
-        self.client.logout()
-        response = self.client.get(reverse("leads:lead-list"))
-        self.assertEqual(response.status_code, 302)
+        url = reverse("leads:lead-list")
+        self.assert_only_authenticated_users_can_access_this_view(url)
 
     def test_unauthenticated_users_get_redirected_to_login(self):
-        self.client.logout()
-        response = self.client.get(reverse("leads:lead-list"), follow=True)
-        self.assertRedirects(response, "/login/?next=/leads/")
+        url = reverse("leads:lead-list")
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
 
 
-class TestLeadDetailView(LeadViewTestCase):
+class TestLeadDetailView(ViewTestCase):
     def test_correct_template_is_used(self):
         lead = Lead.objects.create(
             first_name="John",
@@ -148,33 +157,16 @@ class TestLeadDetailView(LeadViewTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_only_authenticated_users_can_access_this_view(self):
-        self.client.logout()
-
-        lead = Lead.objects.create(
-            first_name="John",
-            last_name="Doe",
-            organisation=self.default_user.userprofile,
-        )
-
-        response = self.client.get(reverse("leads:lead-detail", kwargs={"pk": lead.pk}))
-        self.assertEqual(response.status_code, 302)
+        url = reverse("leads:lead-detail", kwargs={"pk": self.default_lead.pk})
+        self.assert_only_authenticated_users_can_access_this_view(url)
 
     def test_unauthenticated_users_get_redirected_to_login(self):
-        self.client.logout()
-
-        lead = Lead.objects.create(
-            first_name="John",
-            last_name="Doe",
-            organisation=self.default_user.userprofile,
-        )
-
-        response = self.client.get(
-            reverse("leads:lead-detail", kwargs={"pk": lead.pk}), follow=True
-        )
-        self.assertRedirects(response, f"/login/?next=/leads/{lead.pk}/")
+        url = reverse("leads:lead-detail", kwargs={"pk": self.default_lead.pk})
+        redirect_url = f"/login/?next=/leads/{self.default_lead.pk}/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
 
 
-class TestLeadCreateView(LeadViewTestCase):
+class TestLeadCreateView(ViewTestCase):
     def test_correct_template_is_used(self):
         response = self.client.get(reverse("leads:lead-create"))
         self.assertEqual(response.status_code, 200)
@@ -230,17 +222,16 @@ class TestLeadCreateView(LeadViewTestCase):
         self.assertEqual(Lead.objects.count(), initial_lead_count)
 
     def test_only_authenticated_users_can_access_this_view(self):
-        self.client.logout()
-        response = self.client.get(reverse("leads:lead-create"))
-        self.assertEqual(response.status_code, 302)
+        url = reverse("leads:lead-create")
+        self.assert_only_authenticated_users_can_access_this_view(url)
 
     def test_unauthenticated_users_get_redirected_to_login(self):
-        self.client.logout()
-        response = self.client.get(reverse("leads:lead-create"), follow=True)
-        self.assertRedirects(response, "/login/?next=/leads/")
+        url = reverse("leads:lead-create")
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
 
 
-class TestLeadUpdateView(LeadViewTestCase):
+class TestLeadUpdateView(ViewTestCase):
     def setUp(self):
         super().setUp()
         self.default_lead = Lead.objects.create(
@@ -331,22 +322,16 @@ class TestLeadUpdateView(LeadViewTestCase):
         self.assertEqual(lead.email, "help@does.com")
 
     def test_only_authenticated_users_can_access_this_view(self):
-        self.client.logout()
-        response = self.client.get(
-            reverse("leads:lead-update", kwargs={"pk": self.default_lead.pk})
-        )
-        self.assertEqual(response.status_code, 302)
+        url = reverse("leads:lead-update", kwargs={"pk": self.default_lead.pk})
+        self.assert_only_authenticated_users_can_access_this_view(url)
 
     def test_unauthenticated_users_get_redirected_to_login(self):
-        self.client.logout()
-        response = self.client.get(
-            reverse("leads:lead-update", kwargs={"pk": self.default_lead.pk}),
-            follow=True,
-        )
-        self.assertRedirects(response, "/login/?next=/leads/")
+        url = reverse("leads:lead-update", kwargs={"pk": self.default_lead.pk})
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
 
 
-class TestLeadDeleteView(LeadViewTestCase):
+class TestLeadDeleteView(ViewTestCase):
     def setUp(self):
         super().setUp()
         self.default_lead = Lead.objects.create(
@@ -376,28 +361,16 @@ class TestLeadDeleteView(LeadViewTestCase):
         self.assertEqual(Lead.objects.count(), initial_lead_count - 1)
 
     def test_only_authenticated_users_can_access_this_view(self):
-        self.client.logout()
-        response = self.client.get(
-            reverse("leads:lead-delete", kwargs={"pk": self.default_lead.pk})
-        )
-        self.assertEqual(response.status_code, 302)
+        url = reverse("leads:lead-delete", kwargs={"pk": self.default_lead.pk})
+        self.assert_only_authenticated_users_can_access_this_view(url)
 
     def test_unauthenticated_users_get_redirected_to_login(self):
-        self.client.logout()
-        response = self.client.get(
-            reverse("leads:lead-delete", kwargs={"pk": self.default_lead.pk}),
-            follow=True,
-        )
-        self.assertRedirects(response, "/login/?next=/leads/")
+        url = reverse("leads:lead-delete", kwargs={"pk": self.default_lead.pk})
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
 
 
-class TestAssignAgentView(CRMTestCase):
-    def setUp(self):
-        super().setUp()
-        self.client.login(
-            username=self.default_username, password=self.default_password
-        )
-
+class TestAssignAgentView(ViewTestCase):
     def test_correct_template_is_used(self):
         response = self.client.get(
             reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk})
@@ -439,3 +412,36 @@ class TestAssignAgentView(CRMTestCase):
             follow=True,
         )
         self.assertRedirects(response, reverse("leads:lead-list"))
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        url = reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk})
+        self.assert_only_authenticated_users_can_access_this_view(url)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        url = reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk})
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+
+
+class TestCategoryListView(ViewTestCase):
+    def test_correct_template_is_used(self):
+        response = self.client.get(reverse("leads:category-list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "leads/category_list.html")
+
+    def test_correct_list_is_returned(self):
+        Category.objects.create(
+            name="Contacted", organisation=self.default_user.userprofile
+        )
+        category_list = list(Category.objects.all())
+        response = self.client.get(reverse("leads:category-list"))
+        self.assertListEqual(list(response.context["categories"]), category_list)
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        url = reverse("leads:category-list")
+        self.assert_only_authenticated_users_can_access_this_view(url)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        url = reverse("leads:category-list")
+        redirect_url = "/login/?next=/leads/categories/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)

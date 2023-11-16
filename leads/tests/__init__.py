@@ -1,6 +1,6 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import TestCase
-from leads.models import User, Agent, Lead
+from leads.models import User, Agent, Lead, Category
 
 
 class CRMTestCase(TestCase):
@@ -20,6 +20,9 @@ class CRMTestCase(TestCase):
             age=42,
             organisation=self.default_user.userprofile,
             agent=self.default_agent,
+        )
+        self.default_category = Category.objects.create(
+            name="New", organisation=self.default_user.userprofile
         )
 
 
