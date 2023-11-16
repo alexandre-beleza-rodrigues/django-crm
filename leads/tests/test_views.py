@@ -445,3 +445,29 @@ class TestCategoryListView(ViewTestCase):
         url = reverse("leads:category-list")
         redirect_url = "/login/?next=/leads/categories/"
         self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+
+
+class TestCategoryDetailView(ViewTestCase):
+    def test_correct_template_is_used(self):
+        url = reverse("leads:category-detail", kwargs={"pk": self.default_category.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "leads/category_detail.html")
+
+    def test_correct_leads_are_returned(self):
+        self.default_lead.category = self.default_category
+        self.default_lead.save()
+        lead_list = list(self.default_category.leads.all())
+
+        url = reverse("leads:category-detail", kwargs={"pk": self.default_category.pk})
+        response = self.client.get(url)
+        self.assertListEqual(list(response.context["category"].leads.all()), lead_list)
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        url = reverse("leads:category-detail", kwargs={"pk": self.default_category.pk})
+        self.assert_only_authenticated_users_can_access_this_view(url)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        url = reverse("leads:category-detail", kwargs={"pk": self.default_category.pk})
+        redirect_url = f"/login/?next=/leads/categories/{self.default_category.pk}/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
