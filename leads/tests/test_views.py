@@ -1,7 +1,12 @@
 from django.test import TestCase
 from django.urls import reverse
 from leads.models import User, Lead, Agent, Category
-from leads.forms import LeadModelForm, UserCreationForm, AssignAgentForm
+from leads.forms import (
+    LeadModelForm,
+    UserCreationForm,
+    AssignAgentForm,
+    CategoryModelForm,
+)
 from leads.tests import CRMTestCase
 
 
@@ -470,4 +475,43 @@ class TestCategoryDetailView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:category-detail", kwargs={"pk": self.default_category.pk})
         redirect_url = f"/login/?next=/leads/categories/{self.default_category.pk}/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+
+
+class TestCategoryCreateView(ViewTestCase):
+    def test_correct_template_is_used(self):
+        response = self.client.get(reverse("leads:category-create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "leads/category_create.html")
+
+    def test_correct_form_is_used(self):
+        response = self.client.get(reverse("leads:category-create"))
+        self.assertIsInstance(response.context["form"], CategoryModelForm)
+
+    def test_creates_new_category(self):
+        initial_category_count = Category.objects.count()
+
+        url = reverse("leads:category-create")
+        data = {"name": "New Category"}
+        self.client.post(url, data=data)
+
+        try:
+            Category.objects.get(name="New Category")
+            self.assertEqual(Category.objects.count(), initial_category_count + 1)
+        except Category.DoesNotExist:
+            self.fail("Category was not created")
+
+    def test_redirects_to_category_list_on_success(self):
+        url = reverse("leads:category-create")
+        data = {"name": "New Category"}
+        response = self.client.post(url, data=data, follow=True)
+        self.assertRedirects(response, reverse("leads:category-list"))
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        url = reverse("leads:category-create")
+        self.assert_only_authenticated_users_can_access_this_view(url)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        url = reverse("leads:category-create")
+        redirect_url = "/login/?next=/leads/"
         self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
