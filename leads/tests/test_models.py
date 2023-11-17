@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.db.utils import IntegrityError
-from leads.models import User, Lead
+from leads.models import User, Lead, UserProfile
 
 
 class TestUserModel(TestCase):
@@ -53,6 +53,49 @@ class TestUserModel(TestCase):
         with self.assertRaises(IntegrityError):
             user.is_agent = None
             user.save()
+
+
+class TestUserProfileModel(TestCase):
+    def setUp(self) -> None:
+        self.default_user = User.objects.create_user(
+            username="testuser", password="testpass"
+        )
+
+    def test_str_representation(self):
+        user_profile = UserProfile.objects.get(user=self.default_user)
+        self.assertEqual(str(user_profile), self.default_user.username)
+
+    def test_user_profile_create(self):
+        initial_count = UserProfile.objects.count()
+        user = User.objects.create_user(username="newtestuser", password="testpass")
+        self.assertEqual(UserProfile.objects.count(), initial_count + 1)
+        try:
+            UserProfile.objects.get(user=user)
+        except UserProfile.DoesNotExist:
+            self.fail("User profile not created.")
+
+    def test_user_profile_update(self):
+        user_profile = UserProfile.objects.get(user=self.default_user)
+        user_profile.user.username = "newtestuser"
+        user_profile.user.save()
+        self.assertEqual(user_profile.user.username, "newtestuser")
+
+    def test_user_profile_delete(self):
+        new_user = User.objects.create_user(username="newtestuser", password="testpass")
+        initial_count = UserProfile.objects.count()
+        new_user.delete()
+        self.assertEqual(UserProfile.objects.count(), initial_count - 1)
+        try:
+            UserProfile.objects.get(user=new_user)
+            self.fail("User profile not deleted.")
+        except UserProfile.DoesNotExist:
+            pass
+
+    def test_user_profile_should_be_mandatory(self):
+        user_profile = UserProfile.objects.get(user=self.default_user)
+        with self.assertRaises(IntegrityError):
+            user_profile.user = None
+            user_profile.save()
 
 
 class TestLeadModel(TestCase):
