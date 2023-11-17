@@ -3,6 +3,58 @@ from django.db.utils import IntegrityError
 from leads.models import User, Lead
 
 
+class TestUserModel(TestCase):
+    def test_str_representation(self):
+        user = User.objects.create_user(username="testuser", password="testpass")
+        self.assertEqual(str(user), "testuser")
+
+    def test_user_create(self):
+        initial_count = User.objects.count()
+        User.objects.create_user(username="newtestuser", password="testpass")
+        self.assertEqual(User.objects.count(), initial_count + 1)
+        try:
+            User.objects.get(username="newtestuser")
+        except User.DoesNotExist:
+            self.fail("User not created.")
+
+    def test_user_update(self):
+        user = User.objects.create_user(username="testuser", password="testpass")
+        user.username = "newtestuser"
+        user.save()
+        self.assertEqual(user.username, "newtestuser")
+
+    def test_user_delete(self):
+        new_user = User.objects.create_user(username="newtestuser", password="testpass")
+        initial_count = User.objects.count()
+        new_user.delete()
+        self.assertEqual(User.objects.count(), initial_count - 1)
+        try:
+            User.objects.get(username="newtestuser")
+            self.fail("User not deleted.")
+        except User.DoesNotExist:
+            pass
+
+    def test_is_organiser_should_be_true_by_default(self):
+        user = User.objects.create_user(username="testuser", password="testpass")
+        self.assertEqual(user.is_organiser, True)
+
+    def test_is_agent_should_be_false_by_default(self):
+        user = User.objects.create_user(username="testuser", password="testpass")
+        self.assertEqual(user.is_agent, False)
+
+    def test_is_organiser_should_be_mandatory(self):
+        user = User.objects.create_user(username="testuser", password="testpass")
+        with self.assertRaises(IntegrityError):
+            user.is_organiser = None
+            user.save()
+
+    def test_is_agent_should_be_mandatory(self):
+        user = User.objects.create_user(username="testuser", password="testpass")
+        with self.assertRaises(IntegrityError):
+            user.is_agent = None
+            user.save()
+
+
 class TestLeadModel(TestCase):
     def setUp(self) -> None:
         self.default_user = User.objects.create_user(
