@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.db.utils import IntegrityError
-from leads.models import User, Lead, UserProfile, Agent
+from leads.models import User, Lead, UserProfile, Agent, Category
 from leads.tests import CRMTestCase
 
 
@@ -233,3 +233,64 @@ class TestAgentModel(CRMTestCase):
             self.fail("Agent not deleted.")
         except Agent.DoesNotExist:
             pass
+
+
+class TestCategoryModel(CRMTestCase):
+    def test_str_representation(self):
+        self.assertEqual(str(self.default_category), self.default_category.name)
+
+    def test_category_should_be_unique(self):
+        Category.objects.create(
+            name="New Category",
+            organisation=self.default_user.userprofile,
+        )
+        with self.assertRaises(IntegrityError):
+            Category.objects.create(
+                name="New Category",
+                organisation=self.default_user.userprofile,
+            )
+
+    def test_category_create(self):
+        initial_count = Category.objects.count()
+        Category.objects.create(
+            name="Contacted",
+            organisation=self.default_user.userprofile,
+        )
+        self.assertEqual(Category.objects.count(), initial_count + 1)
+        try:
+            Category.objects.get(name="Contacted")
+        except Category.DoesNotExist:
+            self.fail("Category not created.")
+
+    def test_category_update(self):
+        category = Category.objects.create(
+            name="New Category",
+            organisation=self.default_user.userprofile,
+        )
+        category.name = "Contacted"
+        category.save()
+        self.assertEqual(category.name, "Contacted")
+
+    def test_category_delete(self):
+        category = Category.objects.create(
+            name="New Category",
+            organisation=self.default_user.userprofile,
+        )
+        initial_count = Category.objects.count()
+        category.delete()
+        self.assertEqual(Category.objects.count(), initial_count - 1)
+        try:
+            Category.objects.get(name="New Category")
+            self.fail("Category not deleted.")
+        except Category.DoesNotExist:
+            pass
+
+    def test_name_should_be_mandatory(self):
+        with self.assertRaises(IntegrityError):
+            self.default_category.name = None
+            self.default_category.save()
+
+    def test_organisation_should_be_mandatory(self):
+        with self.assertRaises(IntegrityError):
+            self.default_category.organisation = None
+            self.default_category.save()
