@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.db.utils import IntegrityError
-from leads.models import User, Lead, UserProfile
+from leads.models import User, Lead, UserProfile, Agent
+from leads.tests import CRMTestCase
 
 
 class TestUserModel(TestCase):
@@ -196,3 +197,39 @@ class TestLeadModel(TestCase):
         with self.assertRaises(IntegrityError):
             self.default_lead.email = None
             self.default_lead.save()
+
+
+class TestAgentModel(CRMTestCase):
+    def test_str_representation(self):
+        new_agent = Agent.objects.create(
+            user=self.default_user,
+            organisation=self.default_user.userprofile,
+        )
+        self.assertEqual(str(new_agent), self.default_user.username)
+
+    def test_agent_create(self):
+        initial_count = Agent.objects.count()
+        Agent.objects.create(
+            user=self.default_user,
+            organisation=self.default_user.userprofile,
+        )
+        self.assertEqual(Agent.objects.count(), initial_count + 1)
+        try:
+            Agent.objects.get(user=self.default_user)
+        except Agent.DoesNotExist:
+            self.fail("Agent not created.")
+
+    def test_agent_update(self):
+        self.default_agent.user.username = "newtestuser"
+        self.default_agent.user.save()
+        self.assertEqual(self.default_agent.user.username, "newtestuser")
+
+    def test_agent_delete(self):
+        initial_count = Agent.objects.count()
+        self.default_agent.delete()
+        self.assertEqual(Agent.objects.count(), initial_count - 1)
+        try:
+            Agent.objects.get(user=self.default_user)
+            self.fail("Agent not deleted.")
+        except Agent.DoesNotExist:
+            pass
