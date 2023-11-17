@@ -515,3 +515,30 @@ class TestCategoryCreateView(ViewTestCase):
         url = reverse("leads:category-create")
         redirect_url = "/login/?next=/leads/"
         self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+
+
+class TestCategoryDeleteView(ViewTestCase):
+    def test_correct_template_is_used(self):
+        url = reverse("leads:category-delete", kwargs={"pk": self.default_category.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "leads/category_delete.html")
+
+    def test_deletes_category(self):
+        url = reverse("leads:category-delete", kwargs={"pk": self.default_category.pk})
+        self.client.post(url, follow=True)
+        self.assertNotIn(self.default_category, Category.objects.all())
+
+    def test_redirects_to_category_list_on_success(self):
+        url = reverse("leads:category-delete", kwargs={"pk": self.default_category.pk})
+        response = self.client.post(url, follow=True)
+        self.assertRedirects(response, reverse("leads:category-list"))
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        url = reverse("leads:category-delete", kwargs={"pk": self.default_category.pk})
+        self.assert_only_authenticated_users_can_access_this_view(url)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        url = reverse("leads:category-delete", kwargs={"pk": self.default_category.pk})
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
