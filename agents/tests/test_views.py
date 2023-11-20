@@ -138,6 +138,13 @@ class TestAgentUpdateView(ViewTestCase):
             username=self.default_username, password=self.default_password
         )
 
+    def test_correct_template_used(self):
+        response = self.client.get(
+            reverse("agents:agent-update", kwargs={"pk": self.default_agent.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "agents/agent_update.html")
+
     def test_updates_agent(self):
         self.default_agent.user.first_name = "Not Updated"
         self.client.post(
@@ -167,3 +174,14 @@ class TestAgentUpdateView(ViewTestCase):
             response,
             reverse("agents:agent-detail", kwargs={"pk": self.default_agent.pk}),
         )
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        self.client.logout()
+        url = reverse("agents:agent-update", kwargs={"pk": self.default_agent.pk})
+        self.assert_only_authenticated_users_can_access_this_view(url)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        self.client.logout()
+        url = reverse("agents:agent-update", kwargs={"pk": self.default_agent.pk})
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
