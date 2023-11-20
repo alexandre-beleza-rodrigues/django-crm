@@ -1,5 +1,5 @@
 from leads.tests import CRMTestCase
-from leads.forms import LeadModelForm, UserCreationForm
+from leads.forms import LeadModelForm, UserCreationForm, CategoryModelForm
 from leads.models import Agent, User, Category
 
 
@@ -196,4 +196,14 @@ class TestLeadModelForm(CRMTestCase):
                 "email": "jonydoe",
             }
         )
+        self.assertFalse(form.is_valid())
+
+
+class TestCategoryModelForm(CRMTestCase):
+    def test_form_accepts_valid_data(self):
+        form = CategoryModelForm({"name": "testcategory"})
+        self.assertTrue(form.is_valid())
+
+    def test_form_rejects_blank_name(self):
+        form = CategoryModelForm({"name": None})
         self.assertFalse(form.is_valid())
