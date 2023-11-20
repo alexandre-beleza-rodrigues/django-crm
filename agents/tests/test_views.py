@@ -185,3 +185,48 @@ class TestAgentUpdateView(ViewTestCase):
         url = reverse("agents:agent-update", kwargs={"pk": self.default_agent.pk})
         redirect_url = "/login/?next=/leads/"
         self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+
+
+class TestAgentDeleteView(ViewTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.client.login(
+            username=self.default_username, password=self.default_password
+        )
+
+    def test_correct_template_used(self):
+        response = self.client.get(
+            reverse("agents:agent-delete", kwargs={"pk": self.default_agent.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "agents/agent_delete.html")
+
+    def test_deletes_agent(self):
+        initial_agents_count = Agent.objects.count()
+        self.client.post(
+            reverse("agents:agent-delete", kwargs={"pk": self.default_agent.pk})
+        )
+        self.assertEqual(Agent.objects.count(), initial_agents_count - 1)
+        try:
+            Agent.objects.get(user=self.default_agent.user)
+            self.fail("User was not deleted")
+        except Agent.DoesNotExist:
+            pass
+
+    def test_redirects_to_agent_list_view(self):
+        response = self.client.post(
+            reverse("agents:agent-delete", kwargs={"pk": self.default_agent.pk}),
+            follow=True,
+        )
+        self.assertRedirects(response, reverse("agents:agent-list"))
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        self.client.logout()
+        url = reverse("agents:agent-delete", kwargs={"pk": self.default_agent.pk})
+        self.assert_only_authenticated_users_can_access_this_view(url)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        self.client.logout()
+        url = reverse("agents:agent-delete", kwargs={"pk": self.default_agent.pk})
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
