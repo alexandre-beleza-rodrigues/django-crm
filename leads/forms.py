@@ -30,13 +30,6 @@ class LeadModelForm(forms.ModelForm):
         )
 
 
-class CustomUserCreationForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = ("username",)
-        field_classes = {"username": UsernameField}
-
-
 class AssignAgentForm(forms.Form):
     agent = forms.ModelChoiceField(queryset=Agent.objects.none())
 
