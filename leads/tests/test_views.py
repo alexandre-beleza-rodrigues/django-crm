@@ -6,7 +6,7 @@ from leads.forms import (
     UserCreationForm,
     CategoryModelForm,
 )
-from leads.tests import CRMTestCase
+from leads.tests import ViewTestCase
 
 
 class SignupViewTestCase(TestCase):
@@ -34,24 +34,6 @@ class LandingPageViewTestCase(TestCase):
         response = self.client.get(reverse("landing-page"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "landing.html")
-
-
-class ViewTestCase(CRMTestCase):
-    def setUp(self):
-        super().setUp()
-        self.client.login(
-            username=self.default_username, password=self.default_password
-        )
-
-    def assert_only_authenticated_users_can_access_this_view(self, url):
-        self.client.logout()
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 302)
-
-    def assert_unauthenticated_users_get_redirected_to_login(self, url, redirect_url):
-        self.client.logout()
-        response = self.client.get(url, follow=True)
-        self.assertRedirects(response, redirect_url)
 
 
 class TestLeadListView(ViewTestCase):
