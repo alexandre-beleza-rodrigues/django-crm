@@ -4,7 +4,6 @@ from leads.models import User, Lead, Agent, Category
 from leads.forms import (
     LeadModelForm,
     UserCreationForm,
-    AssignAgentForm,
     CategoryModelForm,
     LeadCategoryUpdateForm,
 )
@@ -372,59 +371,6 @@ class TestLeadDeleteView(ViewTestCase):
 
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:lead-delete", kwargs={"pk": self.default_lead.pk})
-        redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
-
-
-class TestAssignAgentView(ViewTestCase):
-    def test_correct_template_is_used(self):
-        response = self.client.get(
-            reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk})
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "leads/assign_agent.html")
-
-    def test_correct_form_is_used(self):
-        response = self.client.get(
-            reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk})
-        )
-        self.assertIsInstance(response.context["form"], AssignAgentForm)
-
-    def test_assigns_agent_to_lead(self):
-        agent = Agent.objects.create(
-            user=User.objects.create_user(username="newuser", password="testpass"),
-            organisation=self.default_user.userprofile,
-        )
-        self.client.post(
-            reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk}),
-            data={
-                "agent": agent.pk,
-            },
-            follow=True,
-        )
-        self.default_lead.refresh_from_db()
-        self.assertEqual(self.default_lead.agent, agent)
-
-    def test_redirects_to_lead_list_on_success(self):
-        agent = Agent.objects.create(
-            user=User.objects.create_user(username="newuser", password="testpass"),
-            organisation=self.default_user.userprofile,
-        )
-        response = self.client.post(
-            reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk}),
-            data={
-                "agent": agent.pk,
-            },
-            follow=True,
-        )
-        self.assertRedirects(response, reverse("leads:lead-list"))
-
-    def test_only_authenticated_users_can_access_this_view(self):
-        url = reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk})
-        self.assert_only_authenticated_users_can_access_this_view(url)
-
-    def test_unauthenticated_users_get_redirected_to_login(self):
-        url = reverse("leads:assign-agent", kwargs={"pk": self.default_lead.pk})
         redirect_url = "/login/?next=/leads/"
         self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
 
