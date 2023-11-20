@@ -98,6 +98,39 @@ class TestAgentCreateView(ViewTestCase):
         self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
 
 
+class TestAgentDetailView(ViewTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.client.login(
+            username=self.default_username, password=self.default_password
+        )
+
+    def test_correct_template_used(self):
+        response = self.client.get(
+            reverse("agents:agent-detail", kwargs={"pk": self.default_agent.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "agents/agent_detail.html")
+
+    def test_returns_correct_agent(self):
+        response = self.client.get(
+            reverse("agents:agent-detail", kwargs={"pk": self.default_agent.pk})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["agent"], self.default_agent)
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        self.client.logout()
+        url = reverse("agents:agent-detail", kwargs={"pk": self.default_agent.pk})
+        self.assert_only_authenticated_users_can_access_this_view(url)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        self.client.logout()
+        url = reverse("agents:agent-detail", kwargs={"pk": self.default_agent.pk})
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+
+
 class TestAgentUpdateView(ViewTestCase):
     def setUp(self) -> None:
         super().setUp()
