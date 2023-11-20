@@ -1,5 +1,5 @@
 from django.urls import reverse
-from leads.tests import CRMTestCase, ViewTestCase
+from leads.tests import ViewTestCase
 from leads.models import Agent, User
 
 
@@ -47,7 +47,58 @@ class TestAgentListView(ViewTestCase):
         self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
 
 
-class TestAgentUpdateView(CRMTestCase):
+class TestAgentCreateView(ViewTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.client.login(
+            username=self.default_username, password=self.default_password
+        )
+
+    def test_correct_template_used(self):
+        response = self.client.get(reverse("agents:agent-create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "agents/agent_create.html")
+
+    def test_creates_agent(self):
+        initial_agents_count = Agent.objects.count()
+        url = reverse("agents:agent-create")
+        data = {
+            "first_name": "New",
+            "last_name": "Agent",
+            "username": "newagent",
+            "email": "newagent@agents.com",
+        }
+        self.client.post(url, data)
+        self.assertEqual(Agent.objects.count(), initial_agents_count + 1)
+        try:
+            User.objects.get(username="newagent")
+        except User.DoesNotExist:
+            self.fail("User was not created")
+
+    def test_redirects_to_agent_list_view(self):
+        url = reverse("agents:agent-create")
+        data = {
+            "first_name": "New",
+            "last_name": "Agent",
+            "username": "newagent",
+            "email": "newagent@agents.com",
+        }
+        response = self.client.post(url, data)
+        self.assertRedirects(response, reverse("agents:agent-list"))
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        self.client.logout()
+        url = reverse("agents:agent-create")
+        self.assert_only_authenticated_users_can_access_this_view(url)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        self.client.logout()
+        url = reverse("agents:agent-create")
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+
+
+class TestAgentUpdateView(ViewTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.client.login(
