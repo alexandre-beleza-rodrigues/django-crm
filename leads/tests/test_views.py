@@ -5,7 +5,6 @@ from leads.forms import (
     LeadModelForm,
     UserCreationForm,
     CategoryModelForm,
-    LeadCategoryUpdateForm,
 )
 from leads.tests import CRMTestCase
 
@@ -489,32 +488,3 @@ class TestCategoryDeleteView(ViewTestCase):
         url = reverse("leads:category-delete", kwargs={"pk": self.default_category.pk})
         redirect_url = "/login/?next=/leads/"
         self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
-
-
-class TestLeadCategoryUpdateView(ViewTestCase):
-    def test_correct_template_is_used(self):
-        url = reverse("leads:lead-category-update", kwargs={"pk": self.default_lead.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "leads/lead_category_update.html")
-
-    def test_correct_form_is_used(self):
-        url = reverse("leads:lead-category-update", kwargs={"pk": self.default_lead.pk})
-        response = self.client.get(url)
-        self.assertIsInstance(response.context["form"], LeadCategoryUpdateForm)
-
-    def test_updates_lead_category(self):
-        self.default_lead.category = None
-        url = reverse("leads:lead-category-update", kwargs={"pk": self.default_lead.pk})
-        data = {"category": self.default_category.pk}
-        self.client.post(url, data=data)
-        self.default_lead.refresh_from_db()
-        self.assertEqual(self.default_lead.category, self.default_category)
-
-    def test_redirects_to_lead_detail_on_success(self):
-        url = reverse("leads:lead-category-update", kwargs={"pk": self.default_lead.pk})
-        data = {"category": self.default_category.pk}
-        response = self.client.post(url, data=data, follow=True)
-        self.assertRedirects(
-            response, reverse("leads:lead-detail", kwargs={"pk": self.default_lead.pk})
-        )

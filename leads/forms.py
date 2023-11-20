@@ -30,12 +30,6 @@ class LeadModelForm(forms.ModelForm):
         )
 
 
-class LeadCategoryUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Lead
-        fields = ("category",)
-
-
 class CategoryModelForm(forms.ModelForm):
     class Meta:
         model = Category
