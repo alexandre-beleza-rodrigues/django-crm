@@ -97,7 +97,7 @@ class TestLeadFlows(FuntionalTest):
         self.assertEqual(
             self.browser.current_url, self.live_server_url + reverse("leads:lead-list")
         )
-        Lead.objects.get(first_name="Test", last_name="Lead")
+        Lead.objects.get(first_name="Test", last_name="Lead", age=30)
 
 
 class TestAgentFlows(FuntionalTest):
@@ -171,3 +171,25 @@ class TestAgentFlows(FuntionalTest):
             self.live_server_url
             + reverse("agents:agent-detail", args=[self.default_agent.pk]),
         )
+
+
+class TestArbitaryFlows(FuntionalTest):
+    def test_user_creates_account_and_logs_in(self):
+        username = "newuser"
+        password = "v3rys3cur3pwd"
+
+        # Create account
+        self.browser.get(self.live_server_url + reverse("signup"))
+        self.browser.find_element(By.ID, "id_username").send_keys(username)
+        self.browser.find_element(By.ID, "id_password1").send_keys(password)
+        self.browser.find_element(By.ID, "id_password2").send_keys(password)
+        self.browser.find_element(By.ID, "signup").click()
+
+        # Log in
+        self.browser.find_element(By.ID, "id_username").send_keys(username)
+        self.browser.find_element(By.ID, "id_password").send_keys(password)
+        self.browser.find_element(By.ID, "login").click()
+
+        # Check if logged in
+        expected_url = self.live_server_url + reverse("leads:lead-list")
+        self.assertEqual(self.browser.current_url, expected_url)
