@@ -29,7 +29,10 @@ jobs:
         pip install -r requirements-dev.txt 
     - name: Test
       run: |
-        python manage.py test --verbosity=2
+        coverage run --source='.' manage.py test --verbosity=2
+    - name: Coverage
+      run: |
+        coverage report --fail-under=100
     - name: Lint
       run: |
         pylint $(git ls-files '*.py')

@@ -1,4 +1,5 @@
 pytest-django
+coverage
 selenium
 pylint
 pylint-django
