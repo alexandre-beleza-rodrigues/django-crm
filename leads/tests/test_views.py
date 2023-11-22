@@ -14,6 +14,7 @@ class SignupViewTestCase(TestCase):
         response = self.client.get(reverse("signup"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "registration/signup.html")
+        self.fail("Test pipeline")
 
     def test_correct_form_is_used(self):
         response = self.client.get(reverse("signup"))
