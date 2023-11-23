@@ -99,6 +99,17 @@ class TestLogingFlows(FuntionalTest):
         self.browser.get(login_url)
         self.assertEqual(self.browser.current_url, home_url)
 
+    def test_landing_page_does_not_containg_login_button_if_user_is_logged_in(self):
+        self.user_logs_in()
+
+        self.browser.get(self.live_server_url + reverse("landing-page"))
+
+        try:
+            self.browser.find_element(By.XPATH, "//a[contains(text(), 'Login')]")
+            self.fail("Login button found after login.")
+        except NoSuchElementException:
+            pass
+
 
 class TestLeadFlows(FuntionalTest):
     def test_user_creates_lead(self):
