@@ -91,6 +91,25 @@ class TestLeadListView(ViewTestCase):
         response = self.client.get(reverse("leads:lead-list"))
         self.assertListEqual(list(response.context["leads"]), [lead_jane])
 
+    def test_agent_only_sees_their_leads(self):
+        username = "newagentuser"
+        password = "testpass"
+
+        agent_user = User.objects.create_user(
+            username=username, password=password, is_organiser=False
+        )
+        agent = Agent.objects.create(
+            user=agent_user, organisation=self.default_user.userprofile
+        )
+
+        self.default_lead.agent = agent
+        self.default_lead.save()
+
+        self.client.login(username=username, password=password)
+
+        response = self.client.get(reverse("leads:lead-list"))
+        self.assertListEqual(list(response.context["leads"]), [self.default_lead])
+
     def test_only_authenticated_users_can_access_this_view(self):
         url = reverse("leads:lead-list")
         self.assert_only_authenticated_users_can_access_this_view(url)
@@ -119,6 +138,29 @@ class TestLeadDetailView(ViewTestCase):
             last_name="Doe",
             organisation=self.default_user.userprofile,
         )
+
+        response = self.client.get(reverse("leads:lead-detail", kwargs={"pk": lead.pk}))
+        self.assertEqual(response.context["lead"], lead)
+
+    def test_correct_lead_is_returned_to_agent(self):
+        username = "newagentuser"
+        password = "testpass"
+
+        agent_user = User.objects.create_user(
+            username=username, password=password, is_organiser=False
+        )
+        agent = Agent.objects.create(
+            user=agent_user, organisation=self.default_user.userprofile
+        )
+
+        lead = Lead.objects.create(
+            first_name="John",
+            last_name="Doe",
+            organisation=self.default_user.userprofile,
+            agent=agent,
+        )
+
+        self.client.login(username=username, password=password)
 
         response = self.client.get(reverse("leads:lead-detail", kwargs={"pk": lead.pk}))
         self.assertEqual(response.context["lead"], lead)
@@ -370,6 +412,31 @@ class TestCategoryListView(ViewTestCase):
         response = self.client.get(reverse("leads:category-list"))
         self.assertListEqual(list(response.context["categories"]), category_list)
 
+    def test_correct_list_is_returned_to_agent(self):
+        Category.objects.create(
+            name="Contacted", organisation=self.default_user.userprofile
+        )
+        organization_categroy_list = list(
+            Category.objects.filter(organisation=self.default_user.userprofile)
+        )
+
+        username = "newagentuser"
+        password = "testpass"
+
+        agent_user = User.objects.create_user(
+            username=username, password=password, is_organiser=False
+        )
+        Agent.objects.create(
+            user=agent_user, organisation=self.default_user.userprofile
+        )
+
+        self.client.login(username=username, password=password)
+
+        response = self.client.get(reverse("leads:category-list"))
+        self.assertListEqual(
+            list(response.context["categories"]), organization_categroy_list
+        )
+
     def test_only_authenticated_users_can_access_this_view(self):
         url = reverse("leads:category-list")
         self.assert_only_authenticated_users_can_access_this_view(url)
@@ -395,6 +462,23 @@ class TestCategoryDetailView(ViewTestCase):
         url = reverse("leads:category-detail", kwargs={"pk": self.default_category.pk})
         response = self.client.get(url)
         self.assertListEqual(list(response.context["category"].leads.all()), lead_list)
+
+    def test_correct_lead_is_returned_to_agent(self):
+        username = "newagentuser"
+        password = "testpass"
+
+        agent_user = User.objects.create_user(
+            username=username, password=password, is_organiser=False
+        )
+        Agent.objects.create(
+            user=agent_user, organisation=self.default_user.userprofile
+        )
+
+        self.client.login(username=username, password=password)
+
+        url = reverse("leads:category-detail", kwargs={"pk": self.default_category.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.context["category"], self.default_category)
 
     def test_only_authenticated_users_can_access_this_view(self):
         url = reverse("leads:category-detail", kwargs={"pk": self.default_category.pk})
@@ -441,6 +525,46 @@ class TestCategoryCreateView(ViewTestCase):
 
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:category-create")
+        redirect_url = "/login/?next=/leads/"
+        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+
+
+class TestCategoryUpdateView(ViewTestCase):
+    def test_correct_template_is_used(self):
+        url = reverse("leads:category-update", kwargs={"pk": self.default_category.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "leads/category_update.html")
+
+    def test_correct_form_is_used(self):
+        url = reverse("leads:category-update", kwargs={"pk": self.default_category.pk})
+        response = self.client.get(url)
+        self.assertIsInstance(response.context["form"], CategoryModelForm)
+
+    def test_valid_form_data_updates_category(self):
+        url = reverse("leads:category-update", kwargs={"pk": self.default_category.pk})
+        data = {"name": "New Category"}
+        self.client.post(url, data=data, follow=True)
+        self.default_category.refresh_from_db()
+        self.assertEqual(self.default_category.name, "New Category")
+        data = {"name": "Category"}
+        self.client.post(url, data=data, follow=True)
+        self.default_category.refresh_from_db()
+        self.assertEqual(self.default_category.name, "Category")
+
+    def test_invalid_form_data_does_not_update_category(self):
+        url = reverse("leads:category-update", kwargs={"pk": self.default_category.pk})
+        data = {"name": ""}
+        self.client.post(url, data=data)
+        self.default_category.refresh_from_db()
+        self.assertNotEqual(self.default_category.name, "")
+
+    def test_only_authenticated_users_can_access_this_view(self):
+        url = reverse("leads:category-update", kwargs={"pk": self.default_category.pk})
+        self.assert_only_authenticated_users_can_access_this_view(url)
+
+    def test_unauthenticated_users_get_redirected_to_login(self):
+        url = reverse("leads:category-update", kwargs={"pk": self.default_category.pk})
         redirect_url = "/login/?next=/leads/"
         self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
 
