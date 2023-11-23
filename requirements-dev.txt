@@ -1,6 +1,6 @@
-pytest-django
-coverage
-selenium
-pylint
-pylint-django
-black
+pytest-django==4.6.0
+coverage==7.3.2
+selenium==4.15.2
+pylint==3.0.2
+pylint-django==2.5.5
+black==23.10.1
