@@ -90,7 +90,7 @@ class TestLogingFlows(FuntionalTest):
         except NoSuchElementException:
             pass
 
-    def test_login_page_redirects_to_home_page_if_user_is_logged_in(self):
+    def test_login_page_redirects_to_landing_page_if_user_is_logged_in(self):
         self.user_logs_in()
 
         login_url = self.live_server_url + reverse("login")
