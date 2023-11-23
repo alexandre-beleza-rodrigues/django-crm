@@ -2,7 +2,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth.views import (
-    LoginView,
     LogoutView,
     PasswordResetCompleteView,
     PasswordResetConfirmView,
@@ -11,7 +10,7 @@ from django.contrib.auth.views import (
 )
 from django.urls import include, path
 
-from leads.views import LandingPageView, SinupView
+from leads.views import LandingPageView, SinupView, LoginView
 
 urlpatterns = [
     path("", LandingPageView.as_view(), name="landing-page"),

@@ -9,6 +9,8 @@ from django.views.generic import (
     TemplateView,
     UpdateView,
 )
+import django.contrib.auth.views as auth_views
+from django.shortcuts import redirect
 
 from agents.mixins import OrganisorAndLoginRequiredMixin
 
@@ -26,6 +28,18 @@ class SinupView(CreateView):
 
     def get_success_url(self):
         return reverse("login")
+
+
+class LoginView(auth_views.LoginView):
+    template_name = "registration/login.html"
+
+    def get_success_url(self):
+        return reverse("leads:lead-list")
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("landing-page")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class LandingPageView(TemplateView):
