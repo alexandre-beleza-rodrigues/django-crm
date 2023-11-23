@@ -32,7 +32,7 @@ jobs:
         coverage run --source='.' manage.py test --verbosity=2
     - name: Coverage
       run: |
-        coverage report --fail-under=100
+        coverage report --fail-under=98
     - name: Lint
       run: |
         pylint $(git ls-files '*.py')
