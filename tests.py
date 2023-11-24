@@ -221,3 +221,13 @@ class TestArbitaryFlows(FuntionalTest):
         # Check if logged in
         expected_url = self.live_server_url + reverse("leads:lead-list")
         self.assertEqual(self.browser.current_url, expected_url)
+
+    def test_clicking_navbar_logo_app_name_redirect_to_landing_page(self):
+        self.user_logs_in()
+
+        self.browser.get(self.live_server_url + reverse("leads:lead-list"))
+        self.browser.find_element(By.ID, "logo_app_name").click()
+
+        self.assertEqual(
+            self.browser.current_url, self.live_server_url + reverse("landing-page")
+        )
