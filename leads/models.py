@@ -28,7 +28,7 @@ class Lead(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
     )
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     phone_number = models.CharField(max_length=20)
     email = models.EmailField()

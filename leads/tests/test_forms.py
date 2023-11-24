@@ -183,6 +183,21 @@ class TestLeadModelForm(CRMTestCase):
         )
         self.assertFalse(form.is_valid())
 
+    def test_form_allows_blank_description(self):
+        form = LeadModelForm(
+            {
+                "first_name": "Jony",
+                "last_name": "Doe",
+                "age": 25,
+                "agent": self.default_agent,
+                "category": self.default_category,
+                "description": None,
+                "phone_number": "123456789",
+                "email": "jonydoe@does.com",
+            }
+        )
+        self.assertTrue(form.is_valid())
+
     def test_form_rejects_blank_phone_number(self):
         form = LeadModelForm(
             {
