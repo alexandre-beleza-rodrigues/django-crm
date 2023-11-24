@@ -18,7 +18,7 @@ class UserProfile(models.Model):
 class Lead(models.Model):
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
-    age = models.PositiveIntegerField(null=True)
+    age = models.PositiveIntegerField(null=True, blank=True)
     organisation = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     agent = models.ForeignKey("Agent", on_delete=models.SET_NULL, null=True, blank=True)
     category = models.ForeignKey(

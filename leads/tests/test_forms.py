@@ -123,6 +123,21 @@ class TestLeadModelForm(CRMTestCase):
         )
         self.assertFalse(form.is_valid())
 
+    def test_form_allows_blank_age(self):
+        form = LeadModelForm(
+            {
+                "first_name": "Jony",
+                "last_name": "Doe",
+                "age": None,
+                "agent": self.default_agent,
+                "category": self.default_category,
+                "description": "John Doe's brother.",
+                "phone_number": "123456789",
+                "email": "jonydoe@does.com",
+            }
+        )
+        self.assertTrue(form.is_valid())
+
     def test_form_rejects_negative_number_for_age(self):
         form = LeadModelForm(
             {
