@@ -68,7 +68,7 @@ class FuntionalTest(CRMStaticLiveServerTestCase):
         self.browser.find_element(By.ID, "login").click()
 
 
-class TestLogingFlows(FuntionalTest):
+class TestLoging(FuntionalTest):
     def test_user_logs_in(self):
         self.user_logs_in()
         self.assertEqual(
@@ -111,7 +111,7 @@ class TestLogingFlows(FuntionalTest):
             pass
 
 
-class TestLeadFlows(FuntionalTest):
+class TestLeads(FuntionalTest):
     def test_user_creates_lead(self):
         self.user_logs_in()
         self.browser.find_element(By.ID, "create_lead").click()
@@ -127,8 +127,48 @@ class TestLeadFlows(FuntionalTest):
         )
         Lead.objects.get(first_name="Test", last_name="Lead", age=30)
 
+    def test_update_form_contains_current_values(self):
+        self.user_logs_in()
 
-class TestAgentFlows(FuntionalTest):
+        self.browser.get(
+            self.live_server_url + reverse("leads:lead-update", args=[self.default_lead.pk])
+        )
+
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "first_name").get_attribute("value"),
+            self.default_lead.first_name,
+        )
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "last_name").get_attribute("value"),
+            self.default_lead.last_name,
+        )
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "age").get_attribute("value"),
+            str(self.default_lead.age) if self.default_lead.age else "",
+        )
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "agent").get_attribute("value"),
+            str(self.default_lead.agent.pk) if self.default_lead.agent else "",
+        )
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "category").get_attribute("value"),
+            str(self.default_lead.category.pk) if self.default_lead.category else "",
+        )
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "description").get_attribute("value"),
+            self.default_lead.description if self.default_lead.description else "",
+        )
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "phone_number").get_attribute("value"),
+            self.default_lead.phone_number,
+        )
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "email").get_attribute("value"),
+            self.default_lead.email,
+        )
+
+
+class TestAgents(FuntionalTest):
     def test_user_creates_agent(self):
         self.user_logs_in()
         self.browser.find_element(By.ID, "agents_list").click()
@@ -198,6 +238,31 @@ class TestAgentFlows(FuntionalTest):
             self.browser.current_url,
             self.live_server_url
             + reverse("agents:agent-detail", args=[self.default_agent.pk]),
+        )
+
+    def test_update_form_contains_current_values(self):
+        self.user_logs_in()
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("agents:agent-update", args=[self.default_agent.pk])
+        )
+
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "email").get_attribute("value"),
+            self.default_agent.user.email,
+        )
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "username").get_attribute("value"),
+            self.default_agent.user.username,
+        )
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "first_name").get_attribute("value"),
+            self.default_agent.user.first_name,
+        )
+        self.assertEqual(
+            self.browser.find_element(By.NAME, "last_name").get_attribute("value"),
+            self.default_agent.user.last_name,
         )
 
 
