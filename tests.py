@@ -168,6 +168,32 @@ class TestLeads(FuntionalTest):
             self.default_lead.email,
         )
 
+    def test_lead_list_contains_unassigned_leads(self):
+        uniquely_named_lead = Lead.objects.create(
+            first_name="Unassigned",
+            last_name="Lead",
+            age=30,
+            phone_number="123456789",
+            email="unassigned@leads.com",
+            organisation=self.default_user.userprofile,
+        )
+
+        self.assertEqual(Lead.objects.filter(first_name="Unassigned").count(), 1)
+
+        self.user_logs_in()
+
+        self.browser.get(self.live_server_url + reverse("leads:lead-list"))
+
+        try:
+            self.browser.find_element(
+                By.XPATH,
+                "//*[contains("
+                f"text(), '{uniquely_named_lead.first_name} {uniquely_named_lead.last_name}'"
+                ")]",
+            )
+        except NoSuchElementException:
+            self.fail("Unassigned lead not found on leads list.")
+
 
 class TestAgents(FuntionalTest):
     def test_user_creates_agent(self):

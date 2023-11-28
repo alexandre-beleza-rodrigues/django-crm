@@ -110,6 +110,45 @@ class TestLeadListView(ViewTestCase):
         response = self.client.get(reverse("leads:lead-list"))
         self.assertListEqual(list(response.context["leads"]), [self.default_lead])
 
+    def test_lead_list_page_loads_successfully_if_there_are_unassigned_leads(self):
+        Lead.objects.create(
+            first_name="John",
+            last_name="Doe",
+            age=33,
+            organisation=self.default_user.userprofile,
+        )
+
+        response = self.client.get(reverse("leads:lead-list"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_lead_list_contains_correct_unassigned_leads(self):
+        Lead.objects.create(
+            first_name="John",
+            last_name="Doe",
+            age=33,
+            organisation=self.default_user.userprofile,
+        )
+
+        default_user_unassigned_leads = list(
+            Lead.objects.filter(
+                organisation=self.default_user.userprofile, agent__isnull=True
+            )
+        )
+
+        other_user = User.objects.create_user(username="otheruser", password="testpass")
+        Lead.objects.create(
+            first_name="Jane",
+            last_name="Doe",
+            age=28,
+            organisation=other_user.userprofile,
+        )
+
+        response = self.client.get(reverse("leads:lead-list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            list(response.context["unassigned_leads"]), default_user_unassigned_leads
+        )
+
     def test_only_authenticated_users_can_access_this_view(self):
         url = reverse("leads:lead-list")
         self.assert_only_authenticated_users_can_access_this_view(url)
