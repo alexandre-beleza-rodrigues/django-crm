@@ -44,7 +44,7 @@ class TestAgentListView(ViewTestCase):
         self.client.logout()
         url = reverse("agents:agent-list")
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestAgentCreateView(ViewTestCase):
@@ -95,7 +95,7 @@ class TestAgentCreateView(ViewTestCase):
         self.client.logout()
         url = reverse("agents:agent-create")
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestAgentDetailView(ViewTestCase):
@@ -128,7 +128,7 @@ class TestAgentDetailView(ViewTestCase):
         self.client.logout()
         url = reverse("agents:agent-detail", kwargs={"pk": self.default_agent.pk})
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestAgentUpdateView(ViewTestCase):
@@ -184,7 +184,7 @@ class TestAgentUpdateView(ViewTestCase):
         self.client.logout()
         url = reverse("agents:agent-update", kwargs={"pk": self.default_agent.pk})
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestAgentDeleteView(ViewTestCase):
@@ -229,4 +229,4 @@ class TestAgentDeleteView(ViewTestCase):
         self.client.logout()
         url = reverse("agents:agent-delete", kwargs={"pk": self.default_agent.pk})
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)

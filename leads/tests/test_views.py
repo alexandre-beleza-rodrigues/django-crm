@@ -117,7 +117,7 @@ class TestLeadListView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:lead-list")
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestLeadDetailView(ViewTestCase):
@@ -191,7 +191,7 @@ class TestLeadDetailView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:lead-detail", kwargs={"pk": self.default_lead.pk})
         redirect_url = f"/login/?next=/leads/{self.default_lead.pk}/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestLeadCreateView(ViewTestCase):
@@ -256,7 +256,7 @@ class TestLeadCreateView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:lead-create")
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestLeadUpdateView(ViewTestCase):
@@ -356,7 +356,7 @@ class TestLeadUpdateView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:lead-update", kwargs={"pk": self.default_lead.pk})
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestLeadDeleteView(ViewTestCase):
@@ -395,7 +395,7 @@ class TestLeadDeleteView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:lead-delete", kwargs={"pk": self.default_lead.pk})
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestCategoryListView(ViewTestCase):
@@ -444,7 +444,7 @@ class TestCategoryListView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:category-list")
         redirect_url = "/login/?next=/leads/categories/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestCategoryDetailView(ViewTestCase):
@@ -487,7 +487,7 @@ class TestCategoryDetailView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:category-detail", kwargs={"pk": self.default_category.pk})
         redirect_url = f"/login/?next=/leads/categories/{self.default_category.pk}/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestCategoryCreateView(ViewTestCase):
@@ -526,7 +526,7 @@ class TestCategoryCreateView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:category-create")
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestCategoryUpdateView(ViewTestCase):
@@ -566,7 +566,7 @@ class TestCategoryUpdateView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:category-update", kwargs={"pk": self.default_category.pk})
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)
 
 
 class TestCategoryDeleteView(ViewTestCase):
@@ -593,4 +593,4 @@ class TestCategoryDeleteView(ViewTestCase):
     def test_unauthenticated_users_get_redirected_to_login(self):
         url = reverse("leads:category-delete", kwargs={"pk": self.default_category.pk})
         redirect_url = "/login/?next=/leads/"
-        self.assert_unauthenticated_users_get_redirected_to_login(url, redirect_url)
+        self.assert_unauthenticated_users_get_redirected_to(url, redirect_url)

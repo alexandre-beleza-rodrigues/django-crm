@@ -131,7 +131,8 @@ class TestLeads(FuntionalTest):
         self.user_logs_in()
 
         self.browser.get(
-            self.live_server_url + reverse("leads:lead-update", args=[self.default_lead.pk])
+            self.live_server_url
+            + reverse("leads:lead-update", args=[self.default_lead.pk])
         )
 
         self.assertEqual(

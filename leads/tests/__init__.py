@@ -61,7 +61,7 @@ class ViewTestCase(CRMTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
 
-    def assert_unauthenticated_users_get_redirected_to_login(self, url, redirect_url):
+    def assert_unauthenticated_users_get_redirected_to(self, url, redirect_url):
         self.client.logout()
         response = self.client.get(url, follow=True)
         self.assertRedirects(response, redirect_url)
