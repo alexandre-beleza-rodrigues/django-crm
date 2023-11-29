@@ -204,6 +204,34 @@ class TestLeads(FuntionalTest):
             self.live_server_url + reverse("leads:category-list"),
         )
 
+    def test_lead_delete_button_deletes_lead(self):
+        self.user_logs_in()
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("leads:lead-update", args=[self.default_lead.pk])
+        )
+
+        self.browser.find_element(By.ID, "delete-lead").click()
+
+        self.assertEqual(
+            self.browser.current_url,
+            self.live_server_url
+            + reverse("leads:lead-delete", args=[self.default_lead.pk]),
+        )
+
+        self.browser.find_element(By.ID, "submit").click()
+
+        self.assertEqual(
+            self.browser.current_url, self.live_server_url + reverse("leads:lead-list")
+        )
+
+        try:
+            Lead.objects.get(pk=self.default_lead.pk)
+            self.fail("Lead not deleted.")
+        except Lead.DoesNotExist:
+            pass
+
 
 class TestAgents(FuntionalTest):
     def test_user_creates_agent(self):
