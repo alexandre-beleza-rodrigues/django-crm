@@ -194,6 +194,16 @@ class TestLeads(FuntionalTest):
         except NoSuchElementException:
             self.fail("Unassigned lead not found on leads list.")
 
+    def test_lead_view_categories_button_exists_in_lead_list(self):
+        self.user_logs_in()
+        self.browser.get(self.live_server_url + reverse("leads:lead-list"))
+        view_categories_button = self.browser.find_element(By.ID, "view-categories")
+        view_categories_button.click()
+        self.assertEqual(
+            self.browser.current_url,
+            self.live_server_url + reverse("leads:category-list"),
+        )
+
 
 class TestAgents(FuntionalTest):
     def test_user_creates_agent(self):
