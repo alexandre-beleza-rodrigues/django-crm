@@ -288,6 +288,16 @@ class TestLeadCreateView(ViewTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Lead.objects.count(), initial_lead_count)
 
+    def test_form_only_accepts_agents_from_the_same_organisation(self):
+        other_user = User.objects.create_user(username="otheruser", password="testpass")
+        other_agent = Agent.objects.create(
+            user=User.objects.create_user(username="otheragent", password="testpass"),
+            organisation=other_user.userprofile,
+        )
+
+        response = self.client.get(reverse("leads:lead-create"))
+        self.assertNotIn(other_agent, response.context["form"].fields["agent"].queryset)
+
     def test_only_authenticated_users_can_access_this_view(self):
         url = reverse("leads:lead-create")
         self.assert_only_authenticated_users_can_access_this_view(url)
@@ -387,6 +397,19 @@ class TestLeadUpdateView(ViewTestCase):
         self.assertEqual(response.status_code, 200)
         lead.refresh_from_db()
         self.assertEqual(lead.email, "help@does.com")
+
+    def test_form_only_accepts_agents_from_the_same_organisation(self):
+        other_user = User.objects.create_user(username="otheruser", password="testpass")
+        other_agent = Agent.objects.create(
+            user=User.objects.create_user(username="otheragent", password="testpass"),
+            organisation=other_user.userprofile,
+        )
+
+        response = self.client.get(
+            reverse("leads:lead-update", kwargs={"pk": self.default_lead.pk})
+        )
+
+        self.assertNotIn(other_agent, response.context["form"].fields["agent"].queryset)
 
     def test_only_authenticated_users_can_access_this_view(self):
         url = reverse("leads:lead-update", kwargs={"pk": self.default_lead.pk})

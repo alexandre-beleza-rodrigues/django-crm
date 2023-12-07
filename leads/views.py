@@ -19,7 +19,7 @@ from .forms import (
     LeadModelForm,
     UserCreationForm,
 )
-from .models import Category, Lead
+from .models import Category, Lead, Agent
 
 
 class SinupView(CreateView):
@@ -92,6 +92,13 @@ class LeadCreateView(OrganisorAndLoginRequiredMixin, CreateView):
     template_name = "leads/lead_create.html"
     form_class = LeadModelForm
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields["agent"].queryset = Agent.objects.filter(
+            organisation=self.request.user.userprofile
+        )
+        return form
+
     def get_success_url(self):
         return reverse("leads:lead-list")
 
@@ -112,6 +119,13 @@ class LeadUpdateView(OrganisorAndLoginRequiredMixin, UpdateView):
     template_name = "leads/lead_update.html"
     form_class = LeadModelForm
     context_object_name = "lead"
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields["agent"].queryset = Agent.objects.filter(
+            organisation=self.request.user.userprofile
+        )
+        return form
 
     def get_queryset(self):
         user = self.request.user
