@@ -37,15 +37,17 @@ class CRMStaticLiveServerTestCase(StaticLiveServerTestCase):
             user=User.objects.create_user(username="agentuser", password="testpass"),
             organisation=self.default_user.userprofile,
         )
+        self.default_category = Category.objects.create(
+            name="New", organisation=self.default_user.userprofile
+        )
         self.default_lead = Lead.objects.create(
             first_name="Test",
             last_name="Lead",
             age=42,
             organisation=self.default_user.userprofile,
             agent=self.default_agent,
-        )
-        self.default_category = Category.objects.create(
-            name="New", organisation=self.default_user.userprofile
+            category=self.default_category,
+            description="This is a test lead.",
         )
 
 

@@ -232,6 +232,41 @@ class TestLeads(FuntionalTest):
         except Lead.DoesNotExist:
             pass
 
+    def test_lead_detail_page_contains_all_fields(self):
+        self.user_logs_in()
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("leads:lead-detail", args=[self.default_lead.pk])
+        )
+
+        self.assertEqual(
+            self.browser.find_element(By.ID, "full-name").text,
+            f"{self.default_lead.first_name} {self.default_lead.last_name}",
+        )
+        self.assertEqual(
+            self.browser.find_element(By.ID, "age").text, str(self.default_lead.age)
+        )
+        self.assertEqual(
+            self.browser.find_element(By.ID, "agent").text,
+            self.default_lead.agent.user.username,
+        )
+        self.assertEqual(
+            self.browser.find_element(By.ID, "category").text,
+            self.default_lead.category.name,
+        )
+        self.assertEqual(
+            self.browser.find_element(By.ID, "description").text,
+            self.default_lead.description,
+        )
+        self.assertEqual(
+            self.browser.find_element(By.ID, "phone-number").text,
+            self.default_lead.phone_number,
+        )
+        self.assertEqual(
+            self.browser.find_element(By.ID, "email").text, self.default_lead.email
+        )
+
 
 class TestAgents(FuntionalTest):
     def test_user_creates_agent(self):
