@@ -285,6 +285,19 @@ class TestCategoryModel(CRMTestCase):
         except Category.DoesNotExist:
             pass
 
+    def test_count_property(self):
+        test_category = Category.objects.create(
+            name="Test Category",
+            organisation=self.default_user.userprofile,
+        )
+        Lead.objects.create(
+            first_name="John",
+            last_name="Doe",
+            organisation=self.default_user.userprofile,
+            category=test_category,
+        )
+        self.assertEqual(test_category.count, 1)
+
     def test_name_should_be_mandatory(self):
         with self.assertRaises(IntegrityError):
             self.default_category.name = None

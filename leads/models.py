@@ -54,6 +54,10 @@ class Category(models.Model):
     def __str__(self):
         return str(self.name)
 
+    @property
+    def count(self):
+        return self.leads.count()
+
 
 def post_user_created_signal(instance, created, **kwargs):
     if created:

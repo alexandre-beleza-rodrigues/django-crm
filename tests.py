@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from django.test import TestCase
 from django.urls import reverse
-from leads.models import User, Lead, Agent
+from leads.models import User, Lead, Agent, Category
 from leads.tests import CRMStaticLiveServerTestCase
 
 
@@ -266,6 +266,36 @@ class TestLeads(FuntionalTest):
         self.assertEqual(
             self.browser.find_element(By.ID, "email").text, self.default_lead.email
         )
+
+    def test_lead_categories_counts(self):
+        self.user_logs_in()
+
+        new_category = Category.objects.create(
+            name="Test Category", organisation=self.default_user.userprofile
+        )
+        Lead.objects.create(
+            first_name="New",
+            last_name="Lead",
+            age=30,
+            phone_number="123456789",
+            email="new@leads.com",
+            organisation=self.default_user.userprofile,
+            category=new_category,
+        )
+
+        self.browser.get(self.live_server_url + reverse("leads:category-list"))
+
+        category_count = self.browser.find_element(
+            By.ID, f"{new_category.name}-category-lead-count"
+        ).text
+        self.assertEqual(category_count, "1")
+
+        categories = Category.objects.all()
+        for category in categories:
+            category_count = self.browser.find_element(
+                By.ID, f"{category.name}-category-lead-count"
+            ).text
+            self.assertEqual(category_count, str(category.count))
 
 
 class TestAgents(FuntionalTest):
