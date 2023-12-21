@@ -361,6 +361,38 @@ class TestLeads(FuntionalTest):
             ).text
             self.assertEqual(category_count, str(category.count))
 
+    def test_user_moves_from_detail_to_update_page(self):
+        self.user_logs_in()
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("leads:lead-detail", args=[self.default_lead.pk])
+        )
+
+        self.browser.find_element(By.ID, "lead-update").click()
+
+        self.assertEqual(
+            self.browser.current_url,
+            self.live_server_url
+            + reverse("leads:lead-update", args=[self.default_lead.pk]),
+        )
+
+    def test_user_moves_from_update_to_detail_page(self):
+        self.user_logs_in()
+
+        self.browser.get(
+            self.live_server_url
+            + reverse("leads:lead-update", args=[self.default_lead.pk])
+        )
+
+        self.browser.find_element(By.ID, "overview").click()
+
+        self.assertEqual(
+            self.browser.current_url,
+            self.live_server_url
+            + reverse("leads:lead-detail", args=[self.default_lead.pk]),
+        )
+
 
 class TestAgents(FuntionalTest):
     def test_user_creates_agent(self):
