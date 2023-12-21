@@ -155,6 +155,42 @@ class TestLeads(FuntionalTest):
         )
         Lead.objects.get(first_name="Test", last_name="Lead", age=30)
 
+    def test_user_updates_lead(self):
+        initial_lead_first_name = self.default_lead.first_name
+
+        self.user_logs_in()
+
+        lead_full_name_td = self.browser.find_element(
+            By.XPATH,
+            f"//*[contains(text(), '{self.default_lead.first_name}')]",
+        )
+        lead_tr = lead_full_name_td.find_element(By.XPATH, "..")
+        lead_tr.find_element(By.XPATH, "//a[contains(text(), 'Edit')]").click()
+
+        self.browser.find_element(By.ID, "id_first_name").clear()
+        self.browser.find_element(By.ID, "id_first_name").send_keys("Updated")
+
+        self.browser.find_element(By.ID, "lead-update").click()
+
+        self.assertEqual(
+            self.browser.current_url,
+            self.live_server_url
+            + reverse("leads:lead-detail", args=[self.default_lead.pk]),
+        )
+
+        self.default_lead.refresh_from_db()
+
+        self.assertNotEqual(self.default_lead.first_name, initial_lead_first_name)
+        self.assertEqual(self.default_lead.first_name, "Updated")
+
+        try:
+            self.browser.find_element(
+                By.XPATH,
+                f"//*[contains(text(), '{self.default_lead.first_name}')]",
+            )
+        except NoSuchElementException:
+            self.fail("Updated lead not found on leads list.")
+
     def test_update_form_contains_current_values(self):
         self.user_logs_in()
 
@@ -324,6 +360,7 @@ class TestLeads(FuntionalTest):
                 By.ID, f"{category.name}-category-lead-count"
             ).text
             self.assertEqual(category_count, str(category.count))
+
 
 class TestAgents(FuntionalTest):
     def test_user_creates_agent(self):

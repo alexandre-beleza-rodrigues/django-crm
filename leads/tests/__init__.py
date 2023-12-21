@@ -48,6 +48,8 @@ class CRMStaticLiveServerTestCase(StaticLiveServerTestCase):
             agent=self.default_agent,
             category=self.default_category,
             description="This is a test lead.",
+            phone_number="1234567890",
+            email="testlead@leads.com",
         )
 
 
