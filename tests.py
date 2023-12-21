@@ -110,6 +110,34 @@ class TestLoging(FuntionalTest):
         except NoSuchElementException:
             pass
 
+    def test_user_signs_up_and_logs_in(self):
+        # start from landing page
+        self.browser.get(self.live_server_url + reverse("landing-page"))
+
+        # click on sign up button
+        self.browser.find_element(By.ID, "signup-page").click()
+
+        # fill in sign up form
+        self.browser.find_element(By.ID, "id_username").send_keys("uniqueusername")
+        self.browser.find_element(By.ID, "id_password1").send_keys("v3rys3cur3pwd")
+        self.browser.find_element(By.ID, "id_password2").send_keys("v3rys3cur3pwd")
+        self.browser.find_element(By.ID, "signup").click()
+
+        # check if user is redirected to login page
+        self.assertEqual(
+            self.browser.current_url, self.live_server_url + reverse("login")
+        )
+
+        # fill in login form
+        self.browser.find_element(By.ID, "id_username").send_keys("testuser")
+        self.browser.find_element(By.ID, "id_password").send_keys("testpass")
+        self.browser.find_element(By.ID, "login").click()
+
+        # check if user is redirected to lead list page
+        self.assertEqual(
+            self.browser.current_url, self.live_server_url + reverse("leads:lead-list")
+        )
+
 
 class TestLeads(FuntionalTest):
     def test_user_creates_lead(self):
@@ -296,7 +324,6 @@ class TestLeads(FuntionalTest):
                 By.ID, f"{category.name}-category-lead-count"
             ).text
             self.assertEqual(category_count, str(category.count))
-
 
 class TestAgents(FuntionalTest):
     def test_user_creates_agent(self):
