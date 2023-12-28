@@ -21,10 +21,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 env = Env()
+env.read_env()
 
 DEVELOPMENT = env.bool("DEVELOPMENT", default=False)
-if DEVELOPMENT:
-    env.read_env()
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # You can define this variable in djcrm/.env file or in your environment.
